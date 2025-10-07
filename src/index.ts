@@ -87,7 +87,7 @@ app.use('*', (_req, res) => {
   res.status(404).json({ error: 'Route not found' });
 });
 
-// Initialize database and start server
+// Initialize database and start server locally
 const startServer = () => {
   app.listen(Number(PORT), HOST, () => {
     console.log(`🚀 Server running on port ${PORT}`);
@@ -96,23 +96,28 @@ const startServer = () => {
   });
 };
 
-// Try to connect to database, but start server anyway
-AppDataSource.initialize()
-  .then(() => {
-    console.log('✅ Database connected successfully');
-    // Seed default admin user in development or if explicitly requested
-    const shouldSeed = process.env.SEED_ADMIN !== 'false';
-    if (shouldSeed) {
-      seedAdmin().catch((e) => console.warn('Seed admin failed:', e?.message || e));
-    }
-    startServer();
-  })
-  .catch((error) => {
-    console.warn('⚠️ Database connection failed. Starting server without database...');
-    console.warn('💡 Make sure PostgreSQL is running and configured properly');
-    console.warn('📖 Check POSTGRESQL_SETUP.md for setup instructions');
-    console.warn('Database error:', error.message);
-    
-    // Start server without database for development
-    startServer();
-  });
+if (!process.env.VERCEL) {
+  // Ambiente local/servidor tradicional
+  AppDataSource.initialize()
+    .then(() => {
+      console.log('✅ Database connected successfully');
+      // Seed default admin user em desenvolvimento ou se explicitamente solicitado
+      const shouldSeed = process.env.SEED_ADMIN !== 'false';
+      if (shouldSeed) {
+        seedAdmin().catch((e) => console.warn('Seed admin failed:', e?.message || e));
+      }
+      startServer();
+    })
+    .catch((error) => {
+      console.warn('⚠️ Database connection failed. Starting server without database...');
+      console.warn('💡 Make sure PostgreSQL is running and configured properly');
+      console.warn('📖 Check POSTGRESQL_SETUP.md for setup instructions');
+      console.warn('Database error:', error.message);
+      // Start server without database para desenvolvimento
+      startServer();
+    });
+}
+
+// Handler para Vercel (e compatível localmente, mas não usado)
+// eslint-disable-next-line import/no-default-export
+export default (req: any, res: any) => (app as any)(req, res);
