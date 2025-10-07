@@ -1,0 +1,49 @@
+### NF-e: validar resNFe
+POST http://localhost:3000/api/nfe/validate/resNFe
+Content-Type: application/json
+
+{
+  "$schema": "resNFe",
+  "exemplo": true
+}
+
+### NF-e: validar resEvento
+POST http://localhost:3000/api/nfe/validate/resEvento
+Content-Type: application/json
+
+{
+  "$schema": "resEvento",
+  "exemplo": true
+}
+
+### NF-e: exemplo resNFe
+GET http://localhost:3000/api/nfe/examples/resNFe
+
+### NF-e: exemplo resEvento
+GET http://localhost:3000/api/nfe/examples/resEvento
+
+### NF-e: decodificar docZip
+POST http://localhost:3000/api/nfe/decode-doczip
+Content-Type: application/json
+
+{
+  "docZipBase64": "<coloque_base64_aqui>"
+}
+
+### NF-e: validar XML (resNFe) enviando xml direto
+POST http://localhost:3000/api/nfe/validate-xml/resNFe
+Content-Type: application/json
+
+{
+  "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\"?><resNFe>< exemplo/></resNFe>",
+  "jsonPath": "resNFe"
+}
+
+### NF-e: validar XML (resEvento) a partir de docZip
+POST http://localhost:3000/api/nfe/validate-xml/resEvento
+Content-Type: application/json
+
+{
+  "docZipBase64": "<coloque_base64_aqui>",
+  "jsonPath": "resEvento"
+}

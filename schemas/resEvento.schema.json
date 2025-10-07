@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "resEvento",
+  "type": "object",
+  "required": ["versao","cOrgao","chNfe","dhEvento","tpEvento","nSeqEvento","xEvento","dhRecbto","nProt"],
+  "allOf": [
+    { "anyOf": [
+      { "required": ["cnpjEmit"] },
+      { "required": ["cpfEmit"] }
+    ]}
+  ],
+  "properties": {
+    "versao":   { "type": "string", "pattern": "^\\d+(\\.\\d+)?$" },
+    "cOrgao":   { "type": "integer", "minimum": 1 },
+    "cnpjEmit": { "type": "string", "pattern": "^\\d{14}$" },
+    "cpfEmit":  { "type": "string", "pattern": "^\\d{11}$" },
+    "chNfe":    { "type": "string", "minLength": 44, "maxLength": 44 },
+    "dhEvento": { "type": "string", "format": "date-time" },
+    "tpEvento": { "type": "string", "maxLength": 6 },
+    "nSeqEvento": { "type": "integer", "minimum": 1, "maximum": 99 },
+    "xEvento":  { "type": "string", "minLength": 5, "maxLength": 60 },
+    "dhRecbto": { "type": "string", "format": "date-time" },
+    "nProt":    { "type": "string", "minLength": 15, "maxLength": 15 }
+  },
+  "additionalProperties": false
+}

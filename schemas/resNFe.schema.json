@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "resNFe",
+  "type": "object",
+  "required": ["versao", "chNfe", "xNome", "ieEmit", "dhEmi", "tpNf", "vNf", "digVal", "dhRecbto", "nProt", "cSitNfe"],
+  "allOf": [
+    { "anyOf": [
+      { "required": ["cnpjEmit"] },
+      { "required": ["cpfEmit"] }
+    ]}
+  ],
+  "properties": {
+    "versao": { "type": "string", "pattern": "^\\d+(\\.\\d+)?$" },
+    "chNfe":  { "type": "string", "minLength": 44, "maxLength": 44 },
+    "cnpjEmit": { "type": "string", "pattern": "^\\d{14}$" },
+    "cpfEmit":  { "type": "string", "pattern": "^\\d{11}$" },
+    "xNome":  { "type": "string", "minLength": 3, "maxLength": 60 },
+    "ieEmit": { "type": "string", "pattern": "^(|ISENTO|\\d{2,14})$" },
+    "dhEmi":  { "type": "string", "format": "date-time" },
+    "tpNf":   { "type": "integer", "enum": [0,1] },
+    "vNf":    { "type": "number", "minimum": 0 },
+    "digVal": { "type": "string", "minLength": 28, "maxLength": 28 },
+    "dhRecbto": { "type": "string", "format": "date-time" },
+    "nProt":  { "type": "string", "minLength": 15, "maxLength": 15 },
+    "cSitNfe": { "type": "integer", "enum": [1,2,3] }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0"></script>
+    <script src="https://cdn.jsdelivr.net/npm/date-fns@2.29.3/index.min.js"></script>
+    <script src="https://cdn.socket.io/4.7.3/socket.io.min.js"></script>
+    <meta name="description" content="Sistema bancário moderno com analytics avançado e notificações em tempo real">
+    <meta name="keywords" content="banco, finanças, analytics, dashboard">
+</head>
+<body>
+    <!-- Loading Spinner -->
+    <div id="loadingSpinner" class="loading-spinner">
+        <div class="spinner"></div>
+        <p>Carregando...</p>
+    </div>
+
+    <!-- Login Screen -->
+    <div id="loginScreen" class="auth-screen">
+        <div class="auth-container">
+            <div class="auth-header">
+                <h1><i class="fas fa-university"></i> Banking System</h1>
+                <p>Sistema de Integração Bancária</p>
+            </div>
+            
+            <form id="loginForm" class="auth-form">
+                <div class="form-group">
+                    <label for="loginEmail">E-mail</label>
+                    <input type="email" id="loginEmail" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="loginPassword">Senha</label>
+                    <input type="password" id="loginPassword" required>
+                </div>
+                
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-sign-in-alt"></i> Entrar
+                </button>
+                
+                <p class="auth-link">
+                    Não tem conta? <a href="#" id="showRegister">Cadastre-se</a>
+                </p>
+            </form>
+        </div>
+    </div>
+
+    <!-- Register Screen -->
+    <div id="registerScreen" class="auth-screen hidden">
+        <div class="auth-container">
+            <div class="auth-header">
+                <h1><i class="fas fa-university"></i> Banking System</h1>
+                <p>Criar Nova Conta</p>
+            </div>
+            
+            <form id="registerForm" class="auth-form">
+                <div class="form-group">
+                    <label for="registerName">Nome Completo</label>
+                    <input type="text" id="registerName" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="registerEmail">E-mail</label>
+                    <input type="email" id="registerEmail" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="registerPhone">Telefone (opcional)</label>
+                    <input type="tel" id="registerPhone">
+                </div>
+                
+                <div class="form-group">
+                    <label for="registerPassword">Senha</label>
+                    <input type="password" id="registerPassword" required minlength="6">
+                </div>
+                
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-user-plus"></i> Cadastrar
+                </button>
+                
+                <p class="auth-link">
+                    Já tem conta? <a href="#" id="showLogin">Fazer login</a>
+                </p>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main Dashboard -->
+    <div id="dashboard" class="dashboard hidden">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <div class="header-left">
+                    <h1><i class="fas fa-university"></i> Banking System</h1>
+                </div>
+                
+                <div class="header-right">
+                    <div class="user-info">
+                        <span id="userName">Usuário</span>
+                        <button class="btn btn-outline" id="logoutBtn">
+                            <i class="fas fa-sign-out-alt"></i> Sair
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-item active" data-section="overview">
+                    <i class="fas fa-chart-pie"></i> Visão Geral
+                </a>
+                <a href="#" class="nav-item" data-section="accounts">
+                    <i class="fas fa-piggy-bank"></i> Contas
+                </a>
+                <a href="#" class="nav-item" data-section="transactions">
+                    <i class="fas fa-exchange-alt"></i> Transações
+                </a>
+                <a href="#" class="nav-item" data-section="banks">
+                    <i class="fas fa-university"></i> Bancos
+                </a>
+                <a href="#" class="nav-item" data-section="analytics">
+                    <i class="fas fa-chart-line"></i> Relatórios
+                </a>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <section id="overviewSection" class="content-section">
+                <div class="section-header">
+                    <h2>Visão Geral</h2>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h4>Saldo Total</h4>
+                        <p class="stat-value" id="totalBalance">R$ 0,00</p>
+                    </div>
+                    <div class="stat-card">
+                        <h4>Receitas (Mês)</h4>
+                        <p class="stat-value income" id="monthlyIncome">R$ 0,00</p>
+                    </div>
+                    <div class="stat-card">
+                        <h4>Despesas (Mês)</h4>
+                        <p class="stat-value expense" id="monthlyExpenses">R$ 0,00</p>
+                    </div>
+                    <div class="stat-card">
+                        <h4>Bancos Conectados</h4>
+                        <p class="stat-value" id="connectedBanks">0</p>
+                    </div>
+                </div>
+
+                <div class="charts-grid">
+                    <div class="chart-card">
+                        <h3>Distribuição de Saldos</h3>
+                        <canvas id="balanceChart"></canvas>
+                    </div>
+                    
+                    <div class="chart-card">
+                        <h3>Receitas vs Despesas</h3>
+                        <canvas id="incomeExpenseChart"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Accounts Section -->
+            <section id="accountsSection" class="content-section">
+                <div class="section-header">
+                    <h2>Minhas Contas</h2>
+                    <button class="btn btn-primary" id="addAccountBtn">
+                        <i class="fas fa-plus"></i> Adicionar Conta
+                    </button>
+                </div>
+
+                <div class="table-container">
+                    <table class="data-table" id="accountsTable">
+                        <thead>
+                            <tr>
+                                <th>Banco</th>
+                                <th>Tipo</th>
+                                <th>Conta</th>
+                                <th>Agência</th>
+                                <th>Saldo</th>
+                                <th>Status</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="accountsTableBody">
+                            <!-- Accounts will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Transactions Section -->
+            <section id="transactionsSection" class="content-section">
+                <div class="section-header">
+                    <h2>Transações</h2>
+                    <div class="header-actions">
+                        <label class="sr-only" for="transactionFilter">Filtrar transações</label>
+                        <select id="transactionFilter" class="form-select" aria-label="Filtrar transações por tipo">
+                            <option value="">Todos os tipos</option>
+                            <option value="credit">Receitas</option>
+                            <option value="debit">Despesas</option>
+                            <option value="transfer">Transferências</option>
+                        </select>
+                        <button class="btn btn-primary" id="addTransactionBtn">
+                            <i class="fas fa-plus"></i> Nova Transação
+                        </button>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <table class="data-table" id="transactionsTable">
+                        <thead>
+                            <tr>
+                                <th>Data</th>
+                                <th>Descrição</th>
+                                <th>Conta</th>
+                                <th>Tipo</th>
+                                <th>Categoria</th>
+                                <th>Valor</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="transactionsTableBody">
+                            <!-- Transactions will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="pagination" id="transactionsPagination">
+                    <!-- Pagination controls will be here -->
+                </div>
+            </section>
+
+            <!-- Banks Section -->
+            <section id="banksSection" class="content-section">
+                <div class="section-header">
+                    <h2>Conexões Bancárias</h2>
+                    <button class="btn btn-primary" id="connectBankBtn">
+                        <i class="fas fa-link"></i> Conectar Banco
+                    </button>
+                </div>
+
+                <div class="banks-grid" id="banksGrid">
+                    <!-- Bank connections will be populated here -->
+                </div>
+            </section>
+
+            <!-- Analytics Section -->
+            <section id="analyticsSection" class="content-section">
+                <div class="section-header">
+                    <h2>Relatórios e Análises</h2>
+                    <div class="header-actions">
+                        <label class="sr-only" for="startDate">Data inicial</label>
+                        <input type="date" id="startDate" class="form-input" placeholder="Início" title="Data inicial">
+                        <label class="sr-only" for="endDate">Data final</label>
+                        <input type="date" id="endDate" class="form-input" placeholder="Fim" title="Data final">
+                        <button class="btn btn-primary" id="generateReportBtn">
+                            <i class="fas fa-chart-bar"></i> Gerar Relatório
+                        </button>
+                    </div>
+                </div>
+
+                <div class="analytics-content">
+                    <div class="summary-cards">
+                        <div class="summary-card">
+                            <h4>Receitas Totais</h4>
+                            <p class="summary-value income" id="totalIncome">R$ 0,00</p>
+                        </div>
+                        <div class="summary-card">
+                            <h4>Despesas Totais</h4>
+                            <p class="summary-value expense" id="totalExpenses">R$ 0,00</p>
+                        </div>
+                        <div class="summary-card">
+                            <h4>Saldo Líquido</h4>
+                            <p class="summary-value" id="netIncome">R$ 0,00</p>
+                        </div>
+                    </div>
+
+                    <div class="charts-container">
+                        <div class="chart-wrapper">
+                            <h4>Gastos por Categoria</h4>
+                            <canvas id="categoryChart"></canvas>
+                        </div>
+                        <div class="chart-wrapper">
+                            <h4>Tendência Mensal</h4>
+                            <canvas id="trendsChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <div id="modalOverlay" class="modal-overlay">
+        <!-- Add Account Modal -->
+        <div id="addAccountModal" class="modal">
+            <div class="modal-header">
+                <h3>Adicionar Conta Bancária</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="addAccountForm">
+                    <div class="form-group">
+                        <label for="accountBank">Banco</label>
+                        <select id="accountBank" required>
+                            <option value="">Selecione o banco</option>
+                            <option value="bb">Banco do Brasil</option>
+                            <option value="bradesco">Bradesco</option>
+                            <option value="itau">Itaú</option>
+                            <option value="santander">Santander</option>
+                            <option value="caixa">Caixa</option>
+                            <option value="nubank">Nubank</option>
+                            <option value="inter">Inter</option>
+                            <option value="sicoob">Sicoob</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="accountType">Tipo de Conta</label>
+                        <select id="accountType" required>
+                            <option value="">Selecione o tipo</option>
+                            <option value="checking">Conta Corrente</option>
+                            <option value="savings">Poupança</option>
+                            <option value="credit">Cartão de Crédito</option>
+                            <option value="investment">Investimentos</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="accountAgency">Agência</label>
+                            <input type="text" id="accountAgency" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="accountNumber">Conta</label>
+                            <input type="text" id="accountNumber" required>
+                        </div>
+                    </div>
+                    
+                    <div class="modal-actions">
+                        <button type="button" class="btn btn-secondary modal-cancel">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Adicionar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Add Transaction Modal -->
+        <div id="addTransactionModal" class="modal">
+            <div class="modal-header">
+                <h3>Nova Transação</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="addTransactionForm">
+                    <div class="form-group">
+                        <label for="transactionAccount">Conta</label>
+                        <select id="transactionAccount" required>
+                            <option value="">Selecione a conta</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="transactionDescription">Descrição</label>
+                        <input type="text" id="transactionDescription" required>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="transactionType">Tipo</label>
+                            <select id="transactionType" required>
+                                <option value="">Selecione</option>
+                                <option value="credit">Receita</option>
+                                <option value="debit">Despesa</option>
+                                <option value="transfer">Transferência</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="transactionAmount">Valor</label>
+                            <input type="number" id="transactionAmount" step="0.01" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="transactionCategory">Categoria</label>
+                            <input type="text" id="transactionCategory">
+                        </div>
+                        <div class="form-group">
+                            <label for="transactionDate">Data</label>
+                            <input type="date" id="transactionDate" required>
+                        </div>
+                    </div>
+                    
+                    <div class="modal-actions">
+                        <button type="button" class="btn btn-secondary modal-cancel">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Adicionar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Container -->
+    <div id="notifications" class="notifications-container"></div>
+
+    <script src="script.js"></script>
+</body>
+</html>
