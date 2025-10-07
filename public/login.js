@@ -13,8 +13,13 @@
     setTimeout(() => el.remove(), 4000);
   }
 
+  function apiUrl(path) {
+    const base = (window.CONFIG && window.CONFIG.API_URL) || '';
+    return base ? `${base}${path}` : path;
+  }
+
   async function apiLogin(email, password) {
-    const res = await fetch('/api/auth/login', {
+    const res = await fetch(apiUrl('/api/auth/login'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password })

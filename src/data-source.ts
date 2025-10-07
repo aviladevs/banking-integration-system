@@ -7,7 +7,8 @@ import { Report } from './entities/Report';
 import { Cliente } from './entities/Cliente';
 
 const isProd = (process.env.NODE_ENV || 'development') === 'production';
-const wantPostgres = Boolean(process.env.DATABASE_URL) || (process.env.DB_TYPE || '').toLowerCase() === 'postgres';
+// Usa Postgres apenas se for explicitamente definido: DB_TYPE=postgres
+const wantPostgres = (process.env.DB_TYPE || '').toLowerCase() === 'postgres';
 const allowSync = process.env.DB_SYNC === 'true' || !isProd; // permite habilitar sync em prod via env, use com cautela
 
 const common = {
