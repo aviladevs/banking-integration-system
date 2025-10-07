@@ -78,25 +78,48 @@ class BankingApp {
     async handleLogin(e) {
         e.preventDefault();
         
-        const email = document.getElementById('loginEmail').value;
+        const loginOrEmail = document.getElementById('loginEmail').value.trim();
         const password = document.getElementById('loginPassword').value;
-        
+
+        // Login simplificado solicitado: nicolas / nicolas2024
+        const SIMPLE_LOGIN = 'nicolas';
+        const SIMPLE_PASSWORD = 'nicolas2024';
+
+        // Caso 1: credenciais simples
+        if ((loginOrEmail.toLowerCase() === SIMPLE_LOGIN || loginOrEmail.toLowerCase() === `${SIMPLE_LOGIN}@email.com`) && password === SIMPLE_PASSWORD) {
+            // Criamos um token fake e usuário fake
+            const fakeToken = 'local-simple-token';
+            const fakeUser = { id: 'local-user', name: 'Nicolas', email: 'nicolas@email.com' };
+
+            this.token = fakeToken;
+            this.user = fakeUser;
+            localStorage.setItem('authToken', this.token);
+            localStorage.setItem('authUser', JSON.stringify(this.user));
+
+            this.showNotification('Login realizado com sucesso!', 'success');
+            this.showDashboard();
+            await this.loadDashboardData().catch(() => {/* ignora erros se API exigir token real */});
+            return;
+        }
+
+        // Caso 2: fluxo normal via API (permanece funcional)
         try {
             const response = await this.apiRequest('/api/auth/login', {
                 method: 'POST',
-                body: JSON.stringify({ email, password })
+                body: JSON.stringify({ email: loginOrEmail, password })
             });
             
             this.token = response.token;
             this.user = response.user;
             localStorage.setItem('authToken', this.token);
+            localStorage.setItem('authUser', JSON.stringify(this.user));
             
             this.showNotification('Login realizado com sucesso!', 'success');
             this.showDashboard();
             await this.loadDashboardData();
             
         } catch (error) {
-            this.showNotification(error.message, 'error');
+            this.showNotification(error.message || 'Falha no login', 'error');
         }
     }
 
@@ -131,6 +154,7 @@ class BankingApp {
         this.token = null;
         this.user = null;
         localStorage.removeItem('authToken');
+        localStorage.removeItem('authUser');
         this.showLogin();
         this.showNotification('Logout realizado com sucesso!', 'info');
     }
@@ -205,12 +229,20 @@ class BankingApp {
 
     // Data Loading Methods
     async loadUserData() {
+        // Primeiro tenta ler do localStorage (login simples)
+        const cached = localStorage.getItem('authUser');
+        if (cached) {
+            try {
+                this.user = JSON.parse(cached);
+                return;
+            } catch {}
+        }
+        // Senão, tenta API
         try {
             const response = await this.apiRequest('/api/users/me');
             this.user = response;
         } catch (error) {
-            console.error('Failed to load user data:', error);
-            this.logout();
+            console.warn('Falha ao carregar usuário via API. Usando modo offline.');
         }
     }
 
