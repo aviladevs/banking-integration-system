@@ -105,15 +105,26 @@ export function requireStrongPassword(req: Request, res: Response, next: NextFun
 }
 
 // Rate limiting configurations
+const isDev = (process.env.NODE_ENV || 'development') !== 'production';
+const disableRateLimit = process.env.DISABLE_RATE_LIMIT === 'true';
+
+function isLocalhost(req: Request): boolean {
+  const ip = (req.ip || req.connection.remoteAddress || '').replace('::ffff:', '');
+  const host = req.hostname || '';
+  return ip === '127.0.0.1' || ip === '::1' || host.includes('localhost');
+}
+
 export const authRateLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // 5 attempts per window
+  windowMs: Number(process.env.AUTH_WINDOW_MS || 15 * 60 * 1000),
+  max: Number(process.env.AUTH_MAX || (isDev ? 50 : 5)),
   message: {
     error: 'Muitas tentativas de login. Tente novamente em 15 minutos.',
     retryAfter: 15 * 60
   },
   standardHeaders: true,
-  legacyHeaders: false
+  legacyHeaders: false,
+  skipSuccessfulRequests: true,
+  skip: (req) => disableRateLimit || (isDev && isLocalhost(req))
 });
 
 export const passwordResetLimiter = rateLimit({
@@ -126,12 +137,15 @@ export const passwordResetLimiter = rateLimit({
 });
 
 export const apiRateLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // 100 requests per window
+  windowMs: Number(process.env.API_WINDOW_MS || 15 * 60 * 1000),
+  max: Number(process.env.API_MAX || (isDev ? 1000 : 100)),
   message: {
     error: 'Muitas requisições à API. Tente novamente em 15 minutos.',
     retryAfter: 15 * 60
-  }
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+  skip: (req) => disableRateLimit || (isDev && isLocalhost(req))
 });
 
 // Security audit logging

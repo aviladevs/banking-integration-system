@@ -27,9 +27,12 @@ async function getUserRepoOrServiceUnavailable(res: Response) {
   }
 }
 
+const isProd = (process.env.NODE_ENV || 'development') === 'production';
+const loginLimiter = isProd ? authRateLimiter : (_req: Request, _res: Response, next: any) => next();
+
 // Register
 router.post('/register', 
-  authRateLimiter, 
+  isProd ? authRateLimiter : (_req, _res, next) => next(),
   sanitizeInput,
   requireStrongPassword,
   auditSecurity('user_registration', 'medium'),
@@ -93,7 +96,7 @@ router.post('/register',
 
 // Login
 router.post('/login', 
-  authRateLimiter, 
+  loginLimiter, 
   sanitizeInput,
   auditSecurity('user_login', 'medium'),
   async (req: Request, res: Response) => {
