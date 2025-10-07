@@ -5,27 +5,33 @@ class BankingApp {
         this.user = null;
         this.currentSection = 'overview';
         this.charts = {};
+        this.offlineMode = false;
         
         this.init();
     }
 
     async init() {
-        this.setupEventListeners();
-        
-        if (this.token) {
-            await this.loadUserData();
-            this.showDashboard();
-        } else {
-            this.showLogin();
+        try {
+            this.setupEventListeners();
+
+            if (this.token) {
+                await this.loadUserData();
+                this.showDashboard();
+            } else {
+                this.showLogin();
+            }
+        } finally {
+            // Sempre esconde o spinner, mesmo em caso de erro
+            this.hideLoading();
         }
-        
-        this.hideLoading();
     }
 
     setupEventListeners() {
         // Auth forms
-        document.getElementById('loginForm').addEventListener('submit', (e) => this.handleLogin(e));
-        document.getElementById('registerForm').addEventListener('submit', (e) => this.handleRegister(e));
+        const loginForm = document.getElementById('loginForm');
+        if (loginForm) loginForm.addEventListener('submit', (e) => this.handleLogin(e));
+        const registerForm = document.getElementById('registerForm');
+        if (registerForm) registerForm.addEventListener('submit', (e) => this.handleRegister(e));
         
         // Auth navigation
         document.getElementById('showRegister').addEventListener('click', (e) => {
@@ -39,7 +45,8 @@ class BankingApp {
         });
 
         // Dashboard navigation
-        document.getElementById('logoutBtn').addEventListener('click', () => this.logout());
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) logoutBtn.addEventListener('click', () => this.logout());
         
         // Sidebar navigation
         document.querySelectorAll('.nav-item').forEach(item => {
@@ -51,11 +58,16 @@ class BankingApp {
         });
 
         // Action buttons
-        document.getElementById('syncAllBtn').addEventListener('click', () => this.syncAllBanks());
-        document.getElementById('addAccountBtn').addEventListener('click', () => this.showAddAccountModal());
-        document.getElementById('addTransactionBtn').addEventListener('click', () => this.showAddTransactionModal());
-        document.getElementById('connectBankBtn').addEventListener('click', () => this.showConnectBankModal());
-        document.getElementById('generateReportBtn').addEventListener('click', () => this.generateReport());
+    const syncBtn = document.getElementById('syncAllBtn');
+    if (syncBtn) syncBtn.addEventListener('click', () => this.syncAllBanks());
+    const addAccountBtn = document.getElementById('addAccountBtn');
+    if (addAccountBtn) addAccountBtn.addEventListener('click', () => this.showAddAccountModal());
+    const addTransactionBtn = document.getElementById('addTransactionBtn');
+    if (addTransactionBtn) addTransactionBtn.addEventListener('click', () => this.showAddTransactionModal());
+    const connectBankBtn = document.getElementById('connectBankBtn');
+    if (connectBankBtn) connectBankBtn.addEventListener('click', () => this.showConnectBankModal());
+    const generateReportBtn = document.getElementById('generateReportBtn');
+    if (generateReportBtn) generateReportBtn.addEventListener('click', () => this.generateReport());
 
         // Modal handling
         document.getElementById('modalOverlay').addEventListener('click', (e) => {
@@ -67,11 +79,14 @@ class BankingApp {
         });
 
         // Forms
-        document.getElementById('addAccountForm').addEventListener('submit', (e) => this.handleAddAccount(e));
-        document.getElementById('addTransactionForm').addEventListener('submit', (e) => this.handleAddTransaction(e));
+    const addAccountForm = document.getElementById('addAccountForm');
+    if (addAccountForm) addAccountForm.addEventListener('submit', (e) => this.handleAddAccount(e));
+    const addTransactionForm = document.getElementById('addTransactionForm');
+    if (addTransactionForm) addTransactionForm.addEventListener('submit', (e) => this.handleAddTransaction(e));
 
         // Filters
-        document.getElementById('transactionFilter').addEventListener('change', () => this.loadTransactions());
+        const filter = document.getElementById('transactionFilter');
+        if (filter) filter.addEventListener('change', () => this.loadTransactions());
     }
 
     // Authentication Methods
@@ -187,13 +202,15 @@ class BankingApp {
         document.querySelectorAll('.nav-item').forEach(item => {
             item.classList.remove('active');
         });
-        document.querySelector(`[data-section="${section}"]`).classList.add('active');
+        const navTarget = document.querySelector(`[data-section="${section}"]`);
+        if (navTarget) navTarget.classList.add('active');
 
         // Update content
-        document.querySelectorAll('.content-section').forEach(section => {
-            section.classList.remove('active');
+        document.querySelectorAll('.content-section').forEach(sectionEl => {
+            sectionEl.classList.remove('active');
         });
-        document.getElementById(`${section}Section`).classList.add('active');
+        const target = document.getElementById(`${section}Section`);
+        if (target) target.classList.add('active');
 
         this.currentSection = section;
         this.loadSectionData(section);
@@ -283,17 +300,26 @@ class BankingApp {
             ]);
 
             // Update stats
-            document.getElementById('totalBalance').textContent = this.formatCurrency(balances.totalBalance);
-            document.getElementById('activeAccounts').textContent = balances.summary.totalAccounts;
-            document.getElementById('connectedBanks').textContent = balances.summary.connectedAccounts;
-            document.getElementById('monthlyTransactions').textContent = analytics.transactionCount;
+            this.safeSetText('totalBalance', this.formatCurrency(balances.totalBalance));
+            this.safeSetText('activeAccounts', balances.summary.totalAccounts);
+            this.safeSetText('connectedBanks', balances.summary.connectedAccounts);
+            this.safeSetText('monthlyTransactions', analytics.transactionCount);
 
             // Update charts
             this.updateBalanceChart(balances.accounts);
             this.updateIncomeExpenseChart(analytics);
 
         } catch (error) {
-            console.error('Failed to load overview:', error);
+            console.warn('Modo offline: usando valores padrão para overview.');
+            this.offlineMode = true;
+            // Placeholders
+            this.safeSetText('totalBalance', this.formatCurrency(0));
+            this.safeSetText('connectedBanks', '0');
+            this.safeSetText('monthlyIncome', this.formatCurrency(0));
+            this.safeSetText('monthlyExpenses', this.formatCurrency(0));
+            // Gráficos vazios
+            try { this.updateBalanceChart([]); } catch {}
+            try { this.updateIncomeExpenseChart({ totalIncome: 0, totalExpenses: 0 }); } catch {}
         }
     }
 
@@ -346,7 +372,11 @@ class BankingApp {
             this.updateCategoryChart(analytics.byCategory);
             
         } catch (error) {
-            console.error('Failed to load analytics:', error);
+            console.warn('Modo offline: analytics não disponível.');
+            this.safeSetText('totalIncome', this.formatCurrency(0));
+            this.safeSetText('totalExpenses', this.formatCurrency(0));
+            this.safeSetText('netIncome', this.formatCurrency(0));
+            try { this.updateCategoryChart({}); } catch {}
         }
     }
 
@@ -692,14 +722,18 @@ class BankingApp {
             ...options
         };
 
-        const response = await fetch(url, config);
-        const data = await response.json();
-
-        if (!response.ok) {
-            throw new Error(data.error || 'Request failed');
+        try {
+            const response = await fetch(url, config);
+            const data = await response.json();
+            if (!response.ok) {
+                throw new Error(data.error || 'Request failed');
+            }
+            return data;
+        } catch (err) {
+            // Marca modo offline e propaga erro para os callers tratarem com placeholders
+            this.offlineMode = true;
+            throw err;
         }
-
-        return data;
     }
 
     formatCurrency(amount) {
@@ -738,3 +772,9 @@ class BankingApp {
 
 // Initialize the app
 const app = new BankingApp();
+
+// Helpers
+BankingApp.prototype.safeSetText = function(id, value) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = String(value);
+};
