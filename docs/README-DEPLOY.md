@@ -40,6 +40,10 @@ window.CONFIG = { API_URL: 'https://<app>.onrender.com' };
 ```
 Se você usar um domínio próprio para o backend, coloque a URL dele aqui.
 
+Atalho útil (sem editar arquivo):
+- Acrescente `?api=https://<app>.onrender.com` na URL do Pages para salvar no `localStorage` e usar esse endpoint.
+- Ou, no console do navegador, salve manualmente: `localStorage.setItem('API_URL', 'https://<app>.onrender.com')`.
+
 ## 4) Testes
 - Acesse `https://financeiro.avilatransportes.com.br`
 - Faça login com as credenciais do admin seed:
