@@ -3,167 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema</title>
+    <title>Login</title>
     <link rel="stylesheet" href="styles.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0"></script>
-    <script src="https://cdn.jsdelivr.net/npm/date-fns@2.29.3/index.min.js"></script>
-    <script src="https://cdn.socket.io/4.7.3/socket.io.min.js"></script>
-    <meta name="description" content="Sistema bancário moderno com analytics avançado e notificações em tempo real">
-    <meta name="keywords" content="banco, finanças, analytics, dashboard">
+    <meta name="description" content="Página de login do sistema">
+    <meta name="keywords" content="login, autenticação">
 </head>
-<body>
-    <!-- Loading Spinner -->
-    <div id="loadingSpinner" class="loading-spinner">
-        <div class="spinner"></div>
-        <p>Carregando...</p>
-    </div>
-
-    <!-- Login Screen -->
     <div id="loginScreen" class="auth-screen">
         <div class="auth-container">
             <div class="auth-header">
                 <h1><i class="fas fa-university"></i> Banking System</h1>
-                <p>Sistema de Integração Bancária</p>
+                <p>Faça login para entrar</p>
             </div>
-            
             <form id="loginForm" class="auth-form">
                 <div class="form-group">
                     <label for="loginEmail">E-mail ou Login</label>
-                    <input type="text" id="loginEmail" placeholder="ex.: nicolas ou seu@email.com" autocomplete="username" required>
+                    <input type="text" id="loginEmail" placeholder="seu@email.com" autocomplete="username" required>
                 </div>
-                
                 <div class="form-group">
                     <label for="loginPassword">Senha</label>
-                    <input type="password" id="loginPassword" required>
+                    <input type="password" id="loginPassword" autocomplete="current-password" required>
                 </div>
-                
                 <button type="submit" class="btn btn-primary" id="loginSubmitBtn">
                     <i class="fas fa-sign-in-alt"></i> Entrar
                 </button>
-                
-                <p class="auth-link">
-                    Não tem conta? <a href="#" id="showRegister">Cadastre-se</a>
-                </p>
             </form>
         </div>
     </div>
 
-    <!-- Register Screen -->
-    <div id="registerScreen" class="auth-screen hidden">
-        <div class="auth-container">
-            <div class="auth-header">
-                <h1><i class="fas fa-university"></i> Banking System</h1>
-                <p>Criar Nova Conta</p>
-            </div>
-            
-            <form id="registerForm" class="auth-form">
-                <div class="form-group">
-                    <label for="registerName">Nome Completo</label>
-                    <input type="text" id="registerName" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="registerEmail">E-mail</label>
-                    <input type="email" id="registerEmail" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="registerPhone">Telefone (opcional)</label>
-                    <input type="tel" id="registerPhone">
-                </div>
-                
-                <div class="form-group">
-                    <label for="registerPassword">Senha</label>
-                    <input type="password" id="registerPassword" required minlength="6">
-                </div>
-                
-                <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-user-plus"></i> Cadastrar
-                </button>
-                
-                <p class="auth-link">
-                    Já tem conta? <a href="#" id="showLogin">Fazer login</a>
-                </p>
-            </form>
-        </div>
-    </div>
+    <div id="notifications" class="notifications-container"></div>
 
-    <!-- Main Dashboard -->
-    <div id="dashboard" class="dashboard hidden">
-        <!-- Header -->
-        <header class="header">
-            <div class="header-content">
-                <div class="header-left">
-                    <h1><i class="fas fa-university"></i> Banking System</h1>
-                </div>
-                
-                <div class="header-right">
-                    <div class="user-info">
-                        <span id="userName">Usuário</span>
-                        <button class="btn btn-outline" id="logoutBtn">
-                            <i class="fas fa-sign-out-alt"></i> Sair
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </header>
-
-        <!-- Sidebar -->
-        <aside class="sidebar">
-            <nav class="sidebar-nav">
-                <a href="#" class="nav-item active" data-section="overview">
-                    <i class="fas fa-chart-pie"></i> Visão Geral
-                </a>
-                <a href="#" class="nav-item" data-section="accounts">
-                    <i class="fas fa-piggy-bank"></i> Contas
-                </a>
-                <a href="#" class="nav-item" data-section="transactions">
-                    <i class="fas fa-exchange-alt"></i> Transações
-                </a>
-                <a href="#" class="nav-item" data-section="banks">
-                    <i class="fas fa-university"></i> Bancos
-                </a>
-                <a href="#" class="nav-item" data-section="analytics">
-                    <i class="fas fa-chart-line"></i> Relatórios
-                </a>
-            </nav>
-        </aside>
-
-        <main class="main-content">
-            <section id="overviewSection" class="content-section">
-                <div class="section-header">
-                    <h2>Visão Geral</h2>
-                </div>
-
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <h4>Saldo Total</h4>
-                        <p class="stat-value" id="totalBalance">—</p>
-                    </div>
-                    <div class="stat-card">
-                        <h4>Receitas (Mês)</h4>
-                        <p class="stat-value income" id="monthlyIncome">—</p>
-                    </div>
-                    <div class="stat-card">
-                        <h4>Despesas (Mês)</h4>
-                        <p class="stat-value expense" id="monthlyExpenses">—</p>
-                    </div>
-                    <div class="stat-card">
-                        <h4>Bancos Conectados</h4>
-                        <p class="stat-value" id="connectedBanks">—</p>
-                    </div>
-                </div>
-
-                <div class="charts-grid">
-                    <div class="chart-card">
-                        <h3>Distribuição de Saldos</h3>
-                        <canvas id="balanceChart"></canvas>
-                    </div>
-                    
-                    <div class="chart-card">
-                        <h3>Receitas vs Despesas</h3>
-                        <canvas id="incomeExpenseChart"></canvas>
+    <script src="login.js"></script>
                     </div>
                 </div>
             </section>
