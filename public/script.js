@@ -93,41 +93,18 @@ class BankingApp {
     async handleLogin(e) {
         e.preventDefault();
         
-        const loginOrEmail = document.getElementById('loginEmail').value.trim();
+        const emailOrLogin = document.getElementById('loginEmail').value.trim();
         const password = document.getElementById('loginPassword').value;
 
-        // Login simplificado solicitado: nicolas / nicolas2024
-        const SIMPLE_LOGIN = 'nicolas';
-        const SIMPLE_PASSWORD = 'nicolas2024';
-
-        // Caso 1: credenciais simples
-        if ((loginOrEmail.toLowerCase() === SIMPLE_LOGIN || loginOrEmail.toLowerCase() === `${SIMPLE_LOGIN}@email.com`) && password === SIMPLE_PASSWORD) {
-            // Criamos um token fake e usuário fake
-            const fakeToken = 'local-simple-token';
-            const fakeUser = { id: 'local-user', name: 'Nicolas', email: 'nicolas@email.com' };
-
-            this.token = fakeToken;
-            this.user = fakeUser;
-            localStorage.setItem('authToken', this.token);
-            localStorage.setItem('authUser', JSON.stringify(this.user));
-
-            this.showNotification('Login realizado com sucesso!', 'success');
-            this.showDashboard();
-            await this.loadDashboardData().catch(() => {/* ignora erros se API exigir token real */});
-            return;
-        }
-
-        // Caso 2: fluxo normal via API (permanece funcional)
         try {
             const response = await this.apiRequest('/api/auth/login', {
                 method: 'POST',
-                body: JSON.stringify({ email: loginOrEmail, password })
+                body: JSON.stringify({ email: emailOrLogin, password })
             });
             
             this.token = response.token;
             this.user = response.user;
             localStorage.setItem('authToken', this.token);
-            localStorage.setItem('authUser', JSON.stringify(this.user));
             
             this.showNotification('Login realizado com sucesso!', 'success');
             this.showDashboard();
@@ -169,7 +146,6 @@ class BankingApp {
         this.token = null;
         this.user = null;
         localStorage.removeItem('authToken');
-        localStorage.removeItem('authUser');
         this.showLogin();
         this.showNotification('Logout realizado com sucesso!', 'info');
     }
@@ -246,20 +222,12 @@ class BankingApp {
 
     // Data Loading Methods
     async loadUserData() {
-        // Primeiro tenta ler do localStorage (login simples)
-        const cached = localStorage.getItem('authUser');
-        if (cached) {
-            try {
-                this.user = JSON.parse(cached);
-                return;
-            } catch {}
-        }
-        // Senão, tenta API
+        if (!this.token) return;
         try {
             const response = await this.apiRequest('/api/users/me');
             this.user = response;
         } catch (error) {
-            console.warn('Falha ao carregar usuário via API. Usando modo offline.');
+            console.warn('Falha ao carregar usuário via API.');
         }
     }
 
@@ -310,16 +278,16 @@ class BankingApp {
             this.updateIncomeExpenseChart(analytics);
 
         } catch (error) {
-            console.warn('Modo offline: usando valores padrão para overview.');
+            console.warn('Sem dados do backend para overview. Mostrando placeholders.');
             this.offlineMode = true;
-            // Placeholders
-            this.safeSetText('totalBalance', this.formatCurrency(0));
-            this.safeSetText('connectedBanks', '0');
-            this.safeSetText('monthlyIncome', this.formatCurrency(0));
-            this.safeSetText('monthlyExpenses', this.formatCurrency(0));
-            // Gráficos vazios
-            try { this.updateBalanceChart([]); } catch {}
-            try { this.updateIncomeExpenseChart({ totalIncome: 0, totalExpenses: 0 }); } catch {}
+            // Placeholders (sem valores fake)
+            this.setPlaceholder('totalBalance');
+            this.setPlaceholder('connectedBanks');
+            this.setPlaceholder('monthlyIncome');
+            this.setPlaceholder('monthlyExpenses');
+            // Esvazia gráficos se existiam
+            if (this.charts.balance) { try { this.charts.balance.destroy(); } catch {} this.charts.balance = null; }
+            if (this.charts.incomeExpense) { try { this.charts.incomeExpense.destroy(); } catch {} this.charts.incomeExpense = null; }
         }
     }
 
@@ -372,11 +340,11 @@ class BankingApp {
             this.updateCategoryChart(analytics.byCategory);
             
         } catch (error) {
-            console.warn('Modo offline: analytics não disponível.');
-            this.safeSetText('totalIncome', this.formatCurrency(0));
-            this.safeSetText('totalExpenses', this.formatCurrency(0));
-            this.safeSetText('netIncome', this.formatCurrency(0));
-            try { this.updateCategoryChart({}); } catch {}
+            console.warn('Sem dados do backend para analytics. Mostrando placeholders.');
+            this.setPlaceholder('totalIncome');
+            this.setPlaceholder('totalExpenses');
+            this.setPlaceholder('netIncome');
+            if (this.charts.category) { try { this.charts.category.destroy(); } catch {} this.charts.category = null; }
         }
     }
 
@@ -473,10 +441,15 @@ class BankingApp {
             this.charts.balance.destroy();
         }
 
-        const data = accounts.map(account => ({
+        const data = Array.isArray(accounts) ? accounts.map(account => ({
             label: account.bankName,
             value: parseFloat(account.balance)
-        }));
+        })) : [];
+
+        if (!data.length) {
+            // Sem dados: não renderiza gráfico
+            return;
+        }
 
         this.charts.balance = new Chart(ctx, {
             type: 'doughnut',
@@ -507,6 +480,10 @@ class BankingApp {
         
         if (this.charts.incomeExpense) {
             this.charts.incomeExpense.destroy();
+        }
+
+        if (!analytics || (analytics.totalIncome == null && analytics.totalExpenses == null)) {
+            return;
         }
 
         this.charts.incomeExpense = new Chart(ctx, {
@@ -547,8 +524,12 @@ class BankingApp {
             this.charts.category.destroy();
         }
 
-        const labels = Object.keys(categoryData);
-        const data = Object.values(categoryData);
+        const labels = categoryData ? Object.keys(categoryData) : [];
+        const data = categoryData ? Object.values(categoryData) : [];
+
+        if (!labels.length) {
+            return;
+        }
 
         this.charts.category = new Chart(ctx, {
             type: 'pie',
@@ -777,4 +758,9 @@ const app = new BankingApp();
 BankingApp.prototype.safeSetText = function(id, value) {
     const el = document.getElementById(id);
     if (el) el.textContent = String(value);
+};
+
+BankingApp.prototype.setPlaceholder = function(id) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = '—';
 };
