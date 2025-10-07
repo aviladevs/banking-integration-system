@@ -1,288 +1,39 @@
 <!DOCTYPE html>
-<html lang="pt-BR" data-theme="light">
+<html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
-    <link rel="stylesheet" href="styles.css">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <meta name="description" content="Página de login do sistema">
-    <meta name="keywords" content="login, autenticação">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login - Financeiro</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <meta name="description" content="Página de login do sistema financeiro" />
 </head>
-    <div id="loginScreen" class="auth-screen">
-        <div class="auth-container">
-            <div class="auth-header">
-                <h1><i class="fas fa-university"></i> Banking System</h1>
-                <p>Faça login para entrar</p>
-            </div>
-            <form id="loginForm" class="auth-form">
-                <div class="form-group">
-                    <label for="loginEmail">E-mail ou Login</label>
-                    <input type="text" id="loginEmail" placeholder="seu@email.com" autocomplete="username" required>
-                </div>
-                <div class="form-group">
-                    <label for="loginPassword">Senha</label>
-                    <input type="password" id="loginPassword" autocomplete="current-password" required>
-                </div>
-                <button type="submit" class="btn btn-primary" id="loginSubmitBtn">
-                    <i class="fas fa-sign-in-alt"></i> Entrar
-                </button>
-            </form>
+<body>
+  <div id="loginScreen" class="auth-screen">
+    <div class="auth-container">
+      <div class="auth-header">
+        <h1><i class="fas fa-university"></i> Banking System</h1>
+        <p>Faça login para entrar</p>
+      </div>
+      <form id="loginForm" class="auth-form">
+        <div class="form-group">
+          <label for="loginEmail">E-mail ou Login</label>
+          <input type="text" id="loginEmail" placeholder="seu@email.com" autocomplete="username" required />
         </div>
-    </div>
-
-    <div id="notifications" class="notifications-container"></div>
-
-    <script src="login.js"></script>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Accounts Section -->
-            <section id="accountsSection" class="content-section">
-                <div class="section-header">
-                    <h2>Minhas Contas</h2>
-                    <button class="btn btn-primary" id="addAccountBtn">
-                        <i class="fas fa-plus"></i> Adicionar Conta
-                    </button>
-                </div>
-
-                <div class="table-container">
-                    <table class="data-table" id="accountsTable">
-                        <thead>
-                            <tr>
-                                <th>Banco</th>
-                                <th>Tipo</th>
-                                <th>Conta</th>
-                                <th>Agência</th>
-                                <th>Saldo</th>
-                                <th>Status</th>
-                                <th>Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody id="accountsTableBody">
-                            <!-- Accounts will be populated here -->
-                        </tbody>
-                    </table>
-                </div>
-            </section>
-
-            <!-- Transactions Section -->
-            <section id="transactionsSection" class="content-section">
-                <div class="section-header">
-                    <h2>Transações</h2>
-                    <div class="header-actions">
-                        <label class="sr-only" for="transactionFilter">Filtrar transações</label>
-                        <select id="transactionFilter" class="form-select" aria-label="Filtrar transações por tipo">
-                            <option value="">Todos os tipos</option>
-                            <option value="credit">Receitas</option>
-                            <option value="debit">Despesas</option>
-                            <option value="transfer">Transferências</option>
-                        </select>
-                        <button class="btn btn-primary" id="addTransactionBtn">
-                            <i class="fas fa-plus"></i> Nova Transação
-                        </button>
-                    </div>
-                </div>
-
-                <div class="table-container">
-                    <table class="data-table" id="transactionsTable">
-                        <thead>
-                            <tr>
-                                <th>Data</th>
-                                <th>Descrição</th>
-                                <th>Conta</th>
-                                <th>Tipo</th>
-                                <th>Categoria</th>
-                                <th>Valor</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody id="transactionsTableBody">
-                            <!-- Transactions will be populated here -->
-                        </tbody>
-                    </table>
-                </div>
-
-                <div class="pagination" id="transactionsPagination">
-                    <!-- Pagination controls will be here -->
-                </div>
-            </section>
-
-            <!-- Banks Section -->
-            <section id="banksSection" class="content-section">
-                <div class="section-header">
-                    <h2>Conexões Bancárias</h2>
-                    <button class="btn btn-primary" id="connectBankBtn">
-                        <i class="fas fa-link"></i> Conectar Banco
-                    </button>
-                </div>
-
-                <div class="banks-grid" id="banksGrid">
-                    <!-- Bank connections will be populated here -->
-                </div>
-            </section>
-
-            <!-- Analytics Section -->
-            <section id="analyticsSection" class="content-section">
-                <div class="section-header">
-                    <h2>Relatórios e Análises</h2>
-                    <div class="header-actions">
-                        <label class="sr-only" for="startDate">Data inicial</label>
-                        <input type="date" id="startDate" class="form-input" placeholder="Início" title="Data inicial">
-                        <label class="sr-only" for="endDate">Data final</label>
-                        <input type="date" id="endDate" class="form-input" placeholder="Fim" title="Data final">
-                        <button class="btn btn-primary" id="generateReportBtn">
-                            <i class="fas fa-chart-bar"></i> Gerar Relatório
-                        </button>
-                    </div>
-                </div>
-
-                <div class="analytics-content">
-                    <div class="summary-cards">
-                        <div class="summary-card">
-                            <h4>Receitas Totais</h4>
-                            <p class="summary-value income" id="totalIncome">—</p>
-                        </div>
-                        <div class="summary-card">
-                            <h4>Despesas Totais</h4>
-                            <p class="summary-value expense" id="totalExpenses">—</p>
-                        </div>
-                        <div class="summary-card">
-                            <h4>Saldo Líquido</h4>
-                            <p class="summary-value" id="netIncome">—</p>
-                        </div>
-                    </div>
-
-                    <div class="charts-container">
-                        <div class="chart-wrapper">
-                            <h4>Gastos por Categoria</h4>
-                            <canvas id="categoryChart"></canvas>
-                        </div>
-                        <div class="chart-wrapper">
-                            <h4>Tendência Mensal</h4>
-                            <canvas id="trendsChart"></canvas>
-                        </div>
-                    </div>
-                </div>
-            </section>
-        </main>
-    </div>
-
-    <!-- Modals -->
-    <div id="modalOverlay" class="modal-overlay">
-        <!-- Add Account Modal -->
-        <div id="addAccountModal" class="modal">
-            <div class="modal-header">
-                <h3>Adicionar Conta Bancária</h3>
-                <button class="modal-close">&times;</button>
-            </div>
-            <div class="modal-body">
-                <form id="addAccountForm">
-                    <div class="form-group">
-                        <label for="accountBank">Banco</label>
-                        <select id="accountBank" required>
-                            <option value="">Selecione o banco</option>
-                            <option value="bb">Banco do Brasil</option>
-                            <option value="bradesco">Bradesco</option>
-                            <option value="itau">Itaú</option>
-                            <option value="santander">Santander</option>
-                            <option value="caixa">Caixa</option>
-                            <option value="nubank">Nubank</option>
-                            <option value="inter">Inter</option>
-                            <option value="sicoob">Sicoob</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="accountType">Tipo de Conta</label>
-                        <select id="accountType" required>
-                            <option value="">Selecione o tipo</option>
-                            <option value="checking">Conta Corrente</option>
-                            <option value="savings">Poupança</option>
-                            <option value="credit">Cartão de Crédito</option>
-                            <option value="investment">Investimentos</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="accountAgency">Agência</label>
-                            <input type="text" id="accountAgency" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="accountNumber">Conta</label>
-                            <input type="text" id="accountNumber" required>
-                        </div>
-                    </div>
-                    
-                    <div class="modal-actions">
-                        <button type="button" class="btn btn-secondary modal-cancel">Cancelar</button>
-                        <button type="submit" class="btn btn-primary">Adicionar</button>
-                    </div>
-                </form>
-            </div>
+        <div class="form-group">
+          <label for="loginPassword">Senha</label>
+          <input type="password" id="loginPassword" autocomplete="current-password" required />
         </div>
-
-        <!-- Add Transaction Modal -->
-        <div id="addTransactionModal" class="modal">
-            <div class="modal-header">
-                <h3>Nova Transação</h3>
-                <button class="modal-close">&times;</button>
-            </div>
-            <div class="modal-body">
-                <form id="addTransactionForm">
-                    <div class="form-group">
-                        <label for="transactionAccount">Conta</label>
-                        <select id="transactionAccount" required>
-                            <option value="">Selecione a conta</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="transactionDescription">Descrição</label>
-                        <input type="text" id="transactionDescription" required>
-                    </div>
-                    
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="transactionType">Tipo</label>
-                            <select id="transactionType" required>
-                                <option value="">Selecione</option>
-                                <option value="credit">Receita</option>
-                                <option value="debit">Despesa</option>
-                                <option value="transfer">Transferência</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="transactionAmount">Valor</label>
-                            <input type="number" id="transactionAmount" step="0.01" required>
-                        </div>
-                    </div>
-                    
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="transactionCategory">Categoria</label>
-                            <input type="text" id="transactionCategory">
-                        </div>
-                        <div class="form-group">
-                            <label for="transactionDate">Data</label>
-                            <input type="date" id="transactionDate" required>
-                        </div>
-                    </div>
-                    
-                    <div class="modal-actions">
-                        <button type="button" class="btn btn-secondary modal-cancel">Cancelar</button>
-                        <button type="submit" class="btn btn-primary">Adicionar</button>
-                    </div>
-                </form>
-            </div>
-        </div>
+        <button type="submit" class="btn btn-primary" id="loginSubmitBtn">
+          <i class="fas fa-sign-in-alt"></i> Entrar
+        </button>
+      </form>
     </div>
+  </div>
 
-    <!-- Notification Container -->
-    <div id="notifications" class="notifications-container"></div>
+  <div id="notifications" class="notifications-container"></div>
 
-    <script src="script.js"></script>
+  <script src="config.js"></script>
+  <script src="login.js"></script>
 </body>
 </html>
