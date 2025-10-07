@@ -11,7 +11,7 @@ services:
       - key: DB_TYPE
         value: sqlite
       - key: DATABASE_PATH
-        value: database.sqlite
+        value: /app/database.sqlite
       - key: JWT_SECRET
         generateValue: true
     disk:

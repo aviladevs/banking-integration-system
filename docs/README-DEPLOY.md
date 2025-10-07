@@ -25,12 +25,12 @@ Render mantém disco persistente via `disk:`.
 3. Confirme as env vars:
    - `NODE_ENV=production`
    - `DB_TYPE=sqlite`
-   - `DATABASE_PATH=database.sqlite`
+  - `DATABASE_PATH=/app/database.sqlite`
    - `JWT_SECRET` (gerado automaticamente)
 4. O serviço ficará acessível em `https://<app>.onrender.com`.
 
 ### Persistência do SQLite
-- O arquivo `database.sqlite` ficará em `/app` (montado pelo `disk`).
+- O arquivo `database.sqlite` ficará em `/app/database.sqlite` (dentro do disco montado em `/app`).
 - Tamanho configurado em 1GB (ajuste conforme necessidade).
 
 ## 3) Conectar o front na API
